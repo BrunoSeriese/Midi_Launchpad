@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "port": "COM3",
+    "sketch": "helper_functions\\button_matrix\\examples\\simple_4x4_button_matrix\\simple_4x4_button_matrix.ino"
+}
