@@ -2,35 +2,38 @@
 #define BUTTON_MATRIX_H
 #include <Arduino.h>
 
-typedef uint8_t byte;
 
 
 typedef struct {
-    byte rowSize;
-    byte columnSize;
+    uint8_t rowSize;
+    uint8_t columnSize;
 } MatrixShape;
 
 
 
 class ButtonMatrix {
     public:
-    ButtonMatrix(byte* rowPins, byte* columnPins, byte rowSize, byte columnSize);
+    ButtonMatrix();
+    ButtonMatrix(uint8_t* rowPins, uint8_t* columnPins, uint8_t rowSize, uint8_t columnSize);
     ~ButtonMatrix();
 
     void onSetup();
 
+    void setupPins();
+
     void updateButtonsPressed(bool* buff);
 
     private:
-    byte* rowPins;    // output pins
-    byte* columnPins;   // input pins
+    uint8_t* rowPins;    // output pins
+    uint8_t* columnPins;   // input pins
     MatrixShape shape;
 
     int buttons;
 
-    void setupPins();
-    void changeOutput(int active_pin);
+    void changeOutput(uint8_t active_pin);
 };
 
+
+template <typename T> T printArray(T* array, uint8_t);
 
 #endif
