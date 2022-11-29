@@ -25,7 +25,7 @@ void setup() {
 void loop() {
     // updates the buttons
     buttonMatrix.updateButtonsPressed(buttons);
-    printArray<bool>(buttons, ROWSIZE*COLUMNSIZE);
+    // printArray<bool>(buttons, ROWSIZE*COLUMNSIZE);
     
     delay(10);
 }

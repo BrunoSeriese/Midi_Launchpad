@@ -17,8 +17,6 @@ class ButtonMatrix {
     ButtonMatrix(uint8_t* rowPins, uint8_t* columnPins, uint8_t rowSize, uint8_t columnSize);
     ~ButtonMatrix();
 
-    void onSetup();
-
     void setupPins();
 
     void updateButtonsPressed(bool* buff);
@@ -34,6 +32,5 @@ class ButtonMatrix {
 };
 
 
-template <typename T> T printArray(T* array, uint8_t);
 
 #endif
