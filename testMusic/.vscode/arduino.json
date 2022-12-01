@@ -1,6 +1,0 @@
-{
-    "configuration": "cpu=atmega328old",
-    "board": "arduino:avr:nano",
-    "sketch": "testMusic.ino",
-    "port": "COM4"
-}
