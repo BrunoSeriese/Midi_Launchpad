@@ -23,9 +23,7 @@
 #define SD_CS_PIN 16
 
 // playback vars
-// samplerate
-// int rate = 32000;
-int rate = 32000*2;
+int sample_rate = 32000;
 int16_t buffer[512];
 
 
@@ -90,29 +88,19 @@ void play_songs() {
 
 
   i2s_begin();  
-  i2s_set_rate(rate);
+  i2s_set_rate(sample_rate);
 
   Serial.println("I2S started");
   delay(2);
 
-
-
   
-  // unsigned long tStart = millis();
-  
-  while(myFile.available()) {
-    // tStart = millis();
-
-    myFile.readBytes((char*)buffer, 512);
-    for(int i=0; i < 512; i++) {
-      i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
-    }
-    // Serial.println(buffer[0]);
-    // unsigned long tEnd = millis();
-    // Serial.print("Time: ");
-    // Serial.println(tEnd-tStart);
-    
-
+  while (myFile.position() < (myFile.size()-1)) {
+        int numBytes = _min(sizeof(buffer), myFile.size() - myFile.position() - 1);
+        myFile.readBytes((char*)buffer, numBytes);
+        for (int i = 0; i < numBytes / 2; i++) {
+            i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
+            
+        }
   }
     
 
