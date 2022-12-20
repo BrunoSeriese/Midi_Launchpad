@@ -11,8 +11,6 @@
 
 // sd vars
 #define SD_CS_PIN 15
-File sampleFile1;
-File sampleFile2;
 
 // playback vars
 // samplerate
@@ -70,38 +68,36 @@ void loop()
 
 
 void play_songs() {
-  sampleFile1 = SD.open("/Crabrave.wav", "r");
-  // sampleFile2 = SD.open("/Frog.wav");
-  Serial.println("Crabrave started -------------");
-
-  if (!sampleFile1) {
+  File myFile = SD.open("/Crabrave.wav", "r");
+  
+  if (!myFile) {
     return;
+  } else {
+    Serial.println("File found");
   }
 
   i2s_begin();
   i2s_set_rate(rate);
 
-  Serial.println(sizeof(buffer));
-  
-  unsigned long tStart = millis();
+  // unsigned long tStart = millis();
 
-    while (sampleFile1.position() < (sampleFile1.size()-1)) {
-        int numBytes = _min(sizeof(buffer), sampleFile1.size() - sampleFile1.position() - 1);
-        sampleFile1.readBytes((char*)buffer, numBytes);
-        for (int i = 0; i < numBytes / 2; i++) {
-            i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
-            
+    while (myFile.position() < (myFile.size()-1)) {
+        int numBytes = _min(sizeof(buffer), myFile.size() - myFile.position() - 1);
+        myFile.readBytes((char*)buffer, numBytes);
+        for (int i = 0; i < 512; i++) {
+            // i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
+            Serial.println((char)buffer[i]);
         }
-        unsigned long tTime = millis()-tStart;
-        tStart = millis();
-        Serial.print("Time: ");
-        Serial.println(tTime);
+        Serial.println();
+        // unsigned long tTime = millis()-tStart;
+        // tStart = millis();
+        // Serial.print("Time: ");
+        // Serial.println(tTime);
 
     }
     
 
-  sampleFile1.close();
-  // Serial.println();
+  myFile.close();
   i2s_end();
   
 }
