@@ -6,16 +6,28 @@
 #include <SD.h>
 #include <FS.h>
 
+// IOs used for I2S. Not defined in i2s.h, unfortunately.
+// Note these are internal GPIO numbers and not pins on an
+// Arduino board. Users need to verify their particular wiring.
+// Most of the pins are only used when i2s clock is enabled
+// I2SO_DATA 3
+// I2SO_BCK  15
+// I2SO_WS   2
+// I2SI_DATA 12
+// I2SI_BCK  13
+// I2SI_WS   14
 #include <I2S.h>
 #include <I2S_reg.h>
 
 // sd vars
-#define SD_CS_PIN 15
+#define SD_CS_PIN 16
 
 // playback vars
 // samplerate
-int rate = 32000;
+// int rate = 32000;
+int rate = 32000*2;
 int16_t buffer[512];
+
 
 int sampToI2sDeltaSigma(short s) {
     int x;
@@ -48,7 +60,7 @@ void setup()
   while (!Serial);
 
   // init sd
-  if (!SD.begin(SD_CS_PIN))
+  if (!SD.begin(SD_CS_PIN, SD_SCK_MHZ(38)))
   {
     Serial.println("initialization failed!");
     return;
@@ -76,25 +88,32 @@ void play_songs() {
     Serial.println("File found");
   }
 
-  i2s_begin();
+
+  i2s_begin();  
   i2s_set_rate(rate);
 
+  Serial.println("I2S started");
+  delay(2);
+
+
+
+  
   // unsigned long tStart = millis();
+  
+  while(myFile.available()) {
+    // tStart = millis();
 
-    while (myFile.position() < (myFile.size()-1)) {
-        int numBytes = _min(sizeof(buffer), myFile.size() - myFile.position() - 1);
-        myFile.readBytes((char*)buffer, numBytes);
-        for (int i = 0; i < 512; i++) {
-            // i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
-            Serial.println((char)buffer[i]);
-        }
-        Serial.println();
-        // unsigned long tTime = millis()-tStart;
-        // tStart = millis();
-        // Serial.print("Time: ");
-        // Serial.println(tTime);
-
+    myFile.readBytes((char*)buffer, 512);
+    for(int i=0; i < 512; i++) {
+      i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
     }
+    // Serial.println(buffer[0]);
+    // unsigned long tEnd = millis();
+    // Serial.print("Time: ");
+    // Serial.println(tEnd-tStart);
+    
+
+  }
     
 
   myFile.close();
