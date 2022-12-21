@@ -24,7 +24,6 @@
 
 // playback vars
 int sample_rate = 32000;
-int16_t buffer[512];
 
 
 int sampToI2sDeltaSigma(short s) {
@@ -57,41 +56,37 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
 
-  // init sd
-  if (!SD.begin(SD_CS_PIN, SD_SCK_MHZ(38)))
+  // init sd 
+  // max speed i could get to work was
+  // 38MHz: SD.begin(SD_CS_PIN, SD_SCK_MHZ(38))
+  if (!SD.begin(SD_CS_PIN))
   {
     Serial.println("initialization failed!");
     return;
-  } else {
-    Serial.println("sd connected");
   }
 
 }
 
 void loop()
 {
-  Serial.println("song started");
-  play_songs();
-  delay(500);
+  play_crab();
 }
 
 
 
-void play_songs() {
+void play_crab() {
   File myFile = SD.open("/Crabrave.wav", "r");
   
   if (!myFile) {
+    Serial.println("File not found");
     return;
-  } else {
-    Serial.println("File found");
   }
 
+  Serial.println("Playing: Crabrave.wav");
+  int16_t buffer[512];
 
   i2s_begin();  
   i2s_set_rate(sample_rate);
-
-  Serial.println("I2S started");
-  delay(2);
 
   
   while (myFile.position() < (myFile.size()-1)) {
@@ -99,23 +94,10 @@ void play_songs() {
         myFile.readBytes((char*)buffer, numBytes);
         for (int i = 0; i < numBytes / 2; i++) {
             i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
-            
         }
   }
     
 
   myFile.close();
   i2s_end();
-  
 }
-
-
-
-
-
-
-
-
-
-
-
