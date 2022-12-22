@@ -56,48 +56,59 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
 
-  // init sd 
-  // max speed i could get to work was
-  // 38MHz: SD.begin(SD_CS_PIN, SD_SCK_MHZ(38))
+  // init sd
   if (!SD.begin(SD_CS_PIN))
   {
     Serial.println("initialization failed!");
     return;
   }
 
+  play_sounds();
 }
 
 void loop()
 {
-  play_crab();
+  
 }
 
 
 
-void play_crab() {
-  File myFile = SD.open("/Crabrave.wav", "r");
-  
-  if (!myFile) {
-    Serial.println("File not found");
+void play_sounds() {
+  File frogSound = SD.open("/Frog.wav", "r");  
+  if (!frogSound) {
+    Serial.println("Frog File not found");
     return;
   }
 
-  Serial.println("Playing: Crabrave.wav");
-  int16_t buffer[512];
+  File fearSound = SD.open("/Fear.wav", "r");  
+  if (!fearSound) {
+    Serial.println("Fear File not found");
+    return;
+  }
+
+  Serial.println("Playing: Frog.wav + Fear.wav");
+  int16_t buffer1[512];
+  int16_t buffer2[512];
+  int16_t newSample;
 
   i2s_begin();  
   i2s_set_rate(sample_rate);
 
-  
-  while (myFile.position() < (myFile.size()-1)) {
-        int numBytes = _min(sizeof(buffer), myFile.size() - myFile.position() - 1);
-        myFile.readBytes((char*)buffer, numBytes);
+  // frogSound is the smaller file
+  while (frogSound.position() < (frogSound.size()-1)) {
+        int numBytes = _min(sizeof(buffer1), frogSound.size() - frogSound.position() - 1);
+        
+        frogSound.readBytes((char*)buffer1, numBytes);
+        fearSound.readBytes((char*)buffer2, numBytes);
+        
         for (int i = 0; i < numBytes / 2; i++) {
-            i2s_write_sample(sampToI2sDeltaSigma(buffer[i]));
+            newSample = (buffer1[i] + buffer2[i]) /2;
+            i2s_write_sample(sampToI2sDeltaSigma(newSample));
         }
   }
     
 
-  myFile.close();
+  frogSound.close();
+  fearSound.close();
   i2s_end();
 }
