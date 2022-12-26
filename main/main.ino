@@ -22,8 +22,15 @@
 // sd vars
 #define SD_CS_PIN 16
 
+#define button2 4
+#define button1 5
 // playback vars
 int sample_rate = 32000;
+int buttonState = 0;
+int buttonState1 = 0;
+
+int playfrog = 0;
+int playfear = 0;
 
 
 int sampToI2sDeltaSigma(short s) {
@@ -56,6 +63,8 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
 
+  
+  pinMode(button2, INPUT);
   // init sd
   if (!SD.begin(SD_CS_PIN))
   {
@@ -63,12 +72,24 @@ void setup()
     return;
   }
 
-  play_sounds();
+  
 }
 
 void loop()
 {
-  
+  buttonState1 = digitalRead(button1);
+  buttonState = digitalRead(button2);
+  Serial.print(buttonState);
+  if (buttonState == HIGH) {
+    playfrog = 1;
+  }
+  if (buttonState1 = HIGH){
+    playfear = 1;
+  }
+
+  play_sounds();
+
+  delay(100);
 }
 
 
