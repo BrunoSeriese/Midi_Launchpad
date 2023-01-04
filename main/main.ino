@@ -18,12 +18,14 @@
 // I2SI_WS   14
 #include <I2S.h>
 #include <I2S_reg.h>
+#include "src/play_sounds/play_sounds.h"
 
 // sd vars
 #define SD_CS_PIN 16
 
 // playback vars
 int sample_rate = 32000;
+Play_sounds soundplayer = Play_sounds();
 
 
 int sampToI2sDeltaSigma(short s) {
@@ -63,52 +65,30 @@ void setup()
     return;
   }
 
-  play_sounds();
+  soundplayer.play("/Frog.wav");
+  // soundplayer.play("/Fear.wav");
+
+  i2s_begin();  
+  i2s_set_rate(sample_rate);
+  
 }
 
 void loop()
 {
+
+  soundplayer.update_sounds();
+  for (int i=0; i < 512; i++) {
+    i2s_write_sample(sampToI2sDeltaSigma(soundplayer.buffer[i]));
+  }
   
 }
 
 
+// i2s_begin();  
+// i2s_set_rate(sample_rate);
 
-void play_sounds() {
-  File frogSound = SD.open("/Frog.wav", "r");  
-  if (!frogSound) {
-    Serial.println("Frog File not found");
-    return;
-  }
+// i2s_write_sample(sampToI2sDeltaSigma());
 
-  File fearSound = SD.open("/Fear.wav", "r");  
-  if (!fearSound) {
-    Serial.println("Fear File not found");
-    return;
-  }
+// i2s_end();
 
-  Serial.println("Playing: Frog.wav + Fear.wav");
-  int16_t buffer1[512];
-  int16_t buffer2[512];
-  int16_t newSample;
 
-  i2s_begin();  
-  i2s_set_rate(sample_rate);
-
-  // frogSound is the smaller file
-  while (frogSound.position() < (frogSound.size()-1)) {
-        int numBytes = _min(sizeof(buffer1), frogSound.size() - frogSound.position() - 1);
-        
-        frogSound.readBytes((char*)buffer1, numBytes);
-        fearSound.readBytes((char*)buffer2, numBytes);
-        
-        for (int i = 0; i < numBytes / 2; i++) {
-            newSample = (buffer1[i] + buffer2[i]) /2;
-            i2s_write_sample(sampToI2sDeltaSigma(newSample));
-        }
-  }
-    
-
-  frogSound.close();
-  fearSound.close();
-  i2s_end();
-}
