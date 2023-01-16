@@ -19,31 +19,17 @@
 #include <I2S.h>
 #include <I2S_reg.h>
 
+// i2s pins are
+// I2SO_DATA 3(RX)  -> DIN 
+// I2SO_BCK  15(D8) -> BCLK
+// I2SO_WS   2(D4)  -> LRC
+
 // sd vars
 #define SD_CS_PIN 16
 
 // playback vars
 int sample_rate = 32000;
 
-
-int sampToI2sDeltaSigma(short s) {
-    int x;
-    int val = 0;
-    int w;
-    static int i1v = 0, i2v = 0;
-    static int outReg = 0;
-    for (x = 0; x < 32; x++) {
-        val <<= 1; //next bit
-        w = s;
-        if (outReg > 0) w -= 32767; else w += 32767; //Difference 1
-        w += i1v; i1v = w; //Integrator 1
-        if (outReg > 0) w -= 32767; else w += 32767; //Difference 2
-        w += i2v; i2v = w; //Integrator 2
-        outReg = w;   //register
-        if (w > 0) val |= 1; //comparator
-    }
-    return val;
-}
 
 
 void setup()
@@ -103,7 +89,7 @@ void play_sounds() {
         
         for (int i = 0; i < numBytes / 2; i++) {
             newSample = (buffer1[i] + buffer2[i]) /2;
-            i2s_write_sample(sampToI2sDeltaSigma(newSample));
+            i2s_write_sample(newSample);
         }
   }
     
