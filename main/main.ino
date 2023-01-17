@@ -5,6 +5,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <FS.h>
+#include <map>
 
 // IOs used for I2S. Not defined in i2s.h, unfortunately.
 // Note these are internal GPIO numbers and not pins on an
@@ -30,7 +31,11 @@
 // playback vars
 int sample_rate = 32000;
 
+//instrument array
+String instruments[4] = {"Guitar", "Dub", "Frog", "Piano"};
 
+//current instrument
+String currentInstrument;
 
 void setup()
 {
@@ -49,12 +54,22 @@ void setup()
     return;
   }
 
+  // Set current instrument to first instrument in array
+  currentInstrument = instruments[0];
+
   play_sounds();
 }
 
 void loop()
 {
-  
+
+  // hiermee wordt er met de potmeter gekozen welk instrument gekozen wordt
+  //potMeter = analogRead(potPin);
+  //instrumentKeuze = map(value,0,1023,0,4);
+
+  currentInstrument = instruments[0];
+
+
 }
 
 
@@ -98,3 +113,4 @@ void play_sounds() {
   fearSound.close();
   i2s_end();
 }
+
