@@ -18,34 +18,19 @@
 // I2SI_WS   14
 #include <I2S.h>
 #include <I2S_reg.h>
-#include "src/play_sounds/play_sounds.h"
+// #include "src/play_sounds/play_sounds.h"
 
 // sd vars
 #define SD_CS_PIN 16
 
+// i2s pins are
+// I2SO_DATA 3(RX)  -> DIN 
+// I2SO_BCK  15(D8) -> BCLK
+// I2SO_WS   2(D4)  -> LRC
+
 // playback vars
 int sample_rate = 32000;
-Play_sounds soundplayer = Play_sounds();
 
-
-int sampToI2sDeltaSigma(short s) {
-    int x;
-    int val = 0;
-    int w;
-    static int i1v = 0, i2v = 0;
-    static int outReg = 0;
-    for (x = 0; x < 32; x++) {
-        val <<= 1; //next bit
-        w = s;
-        if (outReg > 0) w -= 32767; else w += 32767; //Difference 1
-        w += i1v; i1v = w; //Integrator 1
-        if (outReg > 0) w -= 32767; else w += 32767; //Difference 2
-        w += i2v; i2v = w; //Integrator 2
-        outReg = w;   //register
-        if (w > 0) val |= 1; //comparator
-    }
-    return val;
-}
 
 
 void setup()
@@ -65,30 +50,72 @@ void setup()
     return;
   }
 
-  soundplayer.play("/Frog.wav");
-  // soundplayer.play("/Fear.wav");
+  Serial.println("POG");
+
+  play_sounds();
+
+  
+}
+ 
+
+
+void loop()
+{}
+
+
+
+
+void play_sounds() {
+  File frogSound = SD.open("/Frog.wav", "r");  
+  if (!frogSound) {
+    Serial.println("Frog File not found");
+    return;
+  }
+
+  File fearSound = SD.open("/Fear.wav", "r");  
+  if (!fearSound) {
+    Serial.println("Fear File not found");
+    return;
+  }
+
+  Serial.println("Playing: Frog.wav + Fear.wav");
+  int16_t buffer1[512];
+  int16_t buffer2[512];
+  int16_t newSample[512];
+  int16_t finalSample[512];
 
   i2s_begin();  
   i2s_set_rate(sample_rate);
-  
-}
 
-void loop()
-{
+  int numBytes = 0;
+  while (frogSound.position() < (frogSound.size()-1)) {
+        
+    if (i2s_available()) {
+      numBytes = _min(sizeof(buffer1), frogSound.size() - frogSound.position() - 1);
 
-  soundplayer.update_sounds();
-  for (int i=0; i < 512; i++) {
-    i2s_write_sample(sampToI2sDeltaSigma(soundplayer.buffer[i]));
+      frogSound.readBytes((char*)buffer1, numBytes);
+      fearSound.readBytes((char*)buffer2, numBytes);
+      
+      for (int i = 0; i < numBytes / 2; i++) {
+        newSample[i] = (buffer1[i] + buffer2[i]) /4;
+      }
+
+      // while(i2s_available() < numBytes/2) {}
+      i2s_write_buffer_mono(newSample, numBytes/2);
+    }
+    
+    
+    
+    
+    
+        
+
+        
   }
-  
+    
+
+  frogSound.close();
+  fearSound.close();
+  i2s_end();
 }
-
-
-// i2s_begin();  
-// i2s_set_rate(sample_rate);
-
-// i2s_write_sample(sampToI2sDeltaSigma());
-
-// i2s_end();
-
 
