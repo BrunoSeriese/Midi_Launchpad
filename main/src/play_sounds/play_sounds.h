@@ -42,8 +42,8 @@ class Sound
             source.close();
         };
 
-        void update() {
-            source.readBytes((char*)buffer, 512);
+        void update(int16_t* o_buffer) {
+            source.readBytes((char*)o_buffer, 512);
             if (isFinished()) {
                 isPlaying = false;
             }
@@ -53,51 +53,6 @@ class Sound
         };
 
 };
-
-
-
-
-class Play_sounds
-{
-private:
-    Sound soundBuffer[16];
-    int index = 0;
-
-    void updateIndex() {
-        index++;
-        if (index >= 16) {index=0;}
-    }
-
-public:
-    int16_t buffer[512];
-
-    Play_sounds() {};
-    ~Play_sounds() {};
-
-    void play(String soundPath) {
-        soundBuffer[index] = Sound(soundPath);
-        updateIndex();
-    };
- 
-    void update_sounds() {
-        for(int i=0; i < 512; i++) {
-            buffer[i] = 0;
-        }
-
-        for (int i =0; i < 16; i++) {
-            if (soundBuffer[i].isPlaying) {
-                // Serial.println(soundBuffer[i].source.fullName());
-                soundBuffer[i].update();
-                add_buffers((char*)buffer, (char*)soundBuffer[i].buffer, 512);
-            }
-        }
-    };
-};
-
-
-
-
-
 
 
 

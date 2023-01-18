@@ -35,6 +35,9 @@ int sample_rate = 32000;
 
 void setup()
 {
+  // disable watchdog
+  // ESP.wdtDisable();
+
   // turn off ESP8266 RF
   WiFi.forceSleepBegin(); 
   delay(1); 
@@ -62,60 +65,75 @@ void setup()
 void loop()
 {}
 
+class Sound{
+  public:
+    int16_t buffer[512];
+    uint16_t buffer_length = sizeof(buffer)/2;  
+    bool isPlaying=false;
+    
+    Sound(String filePath) {
+      source = SD.open(filePath, "r");  
+      if (source) {
+        isPlaying = true;
+      } else {
+        Serial.print("File: ");
+        Serial.print(filePath);
+        Serial.println(" not found.");
+      }
+    }
 
+    Sound() {
+      isPlaying=false;
+    }
+
+    ~Sound() {
+      source.close();
+    }
+
+    void update() {
+      source.readBytes((char*)buffer, 512*2);      
+    }
+
+    bool available() {
+      return source.position() < (source.size()-1);
+    }
+
+    private:
+      File source;
+};
 
 
 void play_sounds() {
-  File frogSound = SD.open("/Frog.wav", "r");  
-  if (!frogSound) {
-    Serial.println("Frog File not found");
-    return;
-  }
+  // setup sound list
+  Sound sounds[2] = {Sound("/Frog.wav"), Sound("/Fear.wav")};
+  int16_t final_buffer[512];
+  int16_t temp_buffer[512];
 
-  File fearSound = SD.open("/Fear.wav", "r");  
-  if (!fearSound) {
-    Serial.println("Fear File not found");
-    return;
-  }
-
-  Serial.println("Playing: Frog.wav + Fear.wav");
-  int16_t buffer1[512];
-  int16_t buffer2[512];
-  int16_t newSample[512];
-  int16_t finalSample[512];
+  Serial.println("Breakpoint");  
 
   i2s_begin();  
   i2s_set_rate(sample_rate);
 
-  int numBytes = 0;
-  while (frogSound.position() < (frogSound.size()-1)) {
-        
-    if (i2s_available()) {
-      numBytes = _min(sizeof(buffer1), frogSound.size() - frogSound.position() - 1);
+  while (sounds[0].available()) {
+    for(int i=0;i<512;i++) {temp_buffer[i]=0;}
 
-      frogSound.readBytes((char*)buffer1, numBytes);
-      fearSound.readBytes((char*)buffer2, numBytes);
-      
-      for (int i = 0; i < numBytes / 2; i++) {
-        newSample[i] = (buffer1[i] + buffer2[i]) /4;
-      }
-
-      // while(i2s_available() < numBytes/2) {}
-      i2s_write_buffer_mono(newSample, numBytes/2);
+    for(int i=0;i<2;i++) {
+      sounds[i].update();
     }
-    
-    
-    
-    
-    
-        
 
-        
+    for(int i=0;i<512;i++) {
+      for(int j=0;j<2;j++) {
+        temp_buffer[i] += sounds[j].buffer[i]/8;
+      }
+    }
+    while(!i2s_is_empty()) {_NOP();ESP.wdtFeed();}
+    memcpy(final_buffer, temp_buffer, 512*2);
+    i2s_write_buffer_mono_nb(final_buffer, 512);
   }
     
 
-  frogSound.close();
-  fearSound.close();
+  // frogSound.close();
+  // fearSound.close();
   i2s_end();
 }
 
