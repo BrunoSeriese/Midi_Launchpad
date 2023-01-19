@@ -114,3 +114,11 @@ void play_sounds() {
   i2s_end();
 }
 
+void change_instrument(){
+  File dir = SD.open(currentInstrument);
+  if(!dir.isDirectory()) {
+    Serial.println("SD error: go back to previous instrument");
+    return;
+  }
+  delay(1000);
+}
