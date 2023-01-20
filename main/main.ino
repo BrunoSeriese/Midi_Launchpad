@@ -1,4 +1,3 @@
-
 // Code was geschreven voor de ESP8266
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -18,15 +17,14 @@
 // I2SI_WS   14
 #include <I2S.h>
 #include <I2S_reg.h>
-// #include "src/play_sounds/play_sounds.h"
-
-// sd vars
-#define SD_CS_PIN 16
 
 // i2s pins are
 // I2SO_DATA 3(RX)  -> DIN 
 // I2SO_BCK  15(D8) -> BCLK
 // I2SO_WS   2(D4)  -> LRC
+
+// sd vars
+#define SD_CS_PIN 16
 
 // playback vars
 int sample_rate = 32000;
@@ -35,9 +33,6 @@ int sample_rate = 32000;
 
 void setup()
 {
-  // disable watchdog
-  // ESP.wdtDisable();
-
   // turn off ESP8266 RF
   WiFi.forceSleepBegin(); 
   delay(1); 
@@ -53,87 +48,79 @@ void setup()
     return;
   }
 
-  Serial.println("POG");
-
   play_sounds();
-
-  
 }
- 
-
 
 void loop()
-{}
-
-class Sound{
-  public:
-    int16_t buffer[512];
-    uint16_t buffer_length = sizeof(buffer)/2;  
-    bool isPlaying=false;
-    
-    Sound(String filePath) {
-      source = SD.open(filePath, "r");  
-      if (source) {
-        isPlaying = true;
-      } else {
-        Serial.print("File: ");
-        Serial.print(filePath);
-        Serial.println(" not found.");
-      }
-    }
-
-    Sound() {
-      isPlaying=false;
-    }
-
-    ~Sound() {
-      source.close();
-    }
-
-    void update() {
-      source.readBytes((char*)buffer, 512*2);      
-    }
-
-    bool available() {
-      return source.position() < (source.size()-1);
-    }
-
-    private:
-      File source;
-};
+{
+  
+}
 
 
+#define BUFFER_SIZE 256
 void play_sounds() {
-  // setup sound list
-  Sound sounds[2] = {Sound("/Frog.wav"), Sound("/Fear.wav")};
-  int16_t final_buffer[512];
-  int16_t temp_buffer[512];
+  File S1 = SD.open("piano/C3.wav", "r");  
+  if (!S1) {
+    Serial.println("Frog File not found");
+    return;
+  }
 
-  Serial.println("Breakpoint");  
+  File S2 = SD.open("piano/Db3.wav", "r");  
+  if (!S2) {
+    Serial.println("Fear File not found");
+    return;
+  }
+
+  File S3 = SD.open("piano/D3.wav", "r");  
+  if (!S3) {
+    Serial.println("Fear File not found");
+    return;
+  }
+
+  File S4 = SD.open("piano/Eb3.wav", "r");  
+  if (!S4) {
+    Serial.println("Fear File not found");
+    return;
+  }
+
+  File S5 = SD.open("piano/E3.wav", "r");  
+  if (!S5) {
+    Serial.println("Fear File not found");
+    return;
+  }
+
+  Serial.println("Playing: Piano sounds");
+  int16_t buffer1[BUFFER_SIZE];
+  int16_t buffer2[BUFFER_SIZE];
+  int16_t buffer3[BUFFER_SIZE];
+  int16_t buffer4[BUFFER_SIZE];
+  int16_t buffer5[BUFFER_SIZE];
+  int16_t newSample;
 
   i2s_begin();  
   i2s_set_rate(sample_rate);
 
-  while (sounds[0].available()) {
-    for(int i=0;i<512;i++) {temp_buffer[i]=0;}
-
-    for(int i=0;i<2;i++) {
-      sounds[i].update();
-    }
-
-    for(int i=0;i<512;i++) {
-      for(int j=0;j<2;j++) {
-        temp_buffer[i] += sounds[j].buffer[i]/8;
-      }
-    }
-    while(!i2s_is_empty()) {_NOP();ESP.wdtFeed();}
-    memcpy(final_buffer, temp_buffer, 512*2);
-    i2s_write_buffer_mono_nb(final_buffer, 512);
+  // frogSound is the smaller file
+  while (S1.position() < (S1.size()-1)) {
+        int numBytes = _min(sizeof(buffer1), S1.size() - S1.position() - 1);
+        
+        S1.readBytes((char*)buffer1, numBytes);
+        S2.readBytes((char*)buffer2, numBytes);
+        S3.readBytes((char*)buffer3, numBytes);
+        S4.readBytes((char*)buffer4, numBytes);
+        S5.readBytes((char*)buffer5, numBytes);
+        
+        for (int i = 0; i < numBytes / 2; i++) {
+            newSample = (buffer1[i] + buffer2[i] + buffer3[i] + buffer4[i] + buffer5[i]) /5;
+            i2s_write_sample(newSample);
+        }
   }
     
 
-  // frogSound.close();
-  // fearSound.close();
+  S1.close();
+  S2.close();
+  S3.close();
+  S4.close();
+  S5.close();
   i2s_end();
 }
-
