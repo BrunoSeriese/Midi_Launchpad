@@ -25,6 +25,10 @@
 // I2SO_BCK  15(D8) -> BCLK
 // I2SO_WS   2(D4)  -> LRC
 
+
+//potentiometer pins
+//later defineren
+
 // sd vars
 #define SD_CS_PIN 16
 
@@ -68,6 +72,11 @@ void loop()
   //instrumentKeuze = map(value,0,1023,0,4);
 
   currentInstrument = instruments[0];
+
+  
+  // hiermee wordt er met de potmeter het geluid aangepast met een multiplier
+  //potMeter = analogRead(potPin2);
+  //instrumentKeuze = map(value,0,1023,0,1);
 
 
 }
