@@ -39,7 +39,7 @@ double ffsin(double x) {
 
 
 double sineWave(double freq, double dTime) {
-    return ffsin(freq*dTime*PI2);
+    return sin(freq*dTime*PI2);
 }
 double twoSineWaves(double freq, double dTime) {
     return (ffsin(freq*dTime*PI2)+ffsin(freq*4*dTime+0.1*PI2)+ffsin(freq*8*dTime+0.2*PI2))*0.33;

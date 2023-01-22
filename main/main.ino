@@ -75,7 +75,7 @@ double notemap[24] = {
 
 void loop()
 {
-  if (Wire.available()) {
+  if (Wire.available()>0) {
     String ms = Wire.readStringUntil(term);
     noteIndex = ms.substring(0,2).toInt();
     state = ms.substring(2,3).toInt();
@@ -84,7 +84,7 @@ void loop()
 
   // audio stuff
   for(int i=0;i<512;i++) {
-    if (noteIndex>0) {
+    if (noteIndex<25) {
       dSample = sineWave(notemap[noteIndex], offset);
       buffer[i] = double2int(dSample*32767*volume);
       offset+=31.25*0.000001; 
