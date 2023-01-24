@@ -26,8 +26,18 @@ void loop() {
     buttonState = digitalRead(buttons[i]);
   if ( buttonState == LOW){
       Serial.println("button:" + String(i+1) + "has been pressed");
+      // speelt een note af voor x aantal seconden
+      tone(1,frequencies[i],1);
       delay(500);
   }
 }
   
+}
+
+void tone(uint8_t _pin, unsigned int frequency, unsigned long duration) {
+pinMode (_pin, OUTPUT );
+analogWriteFreq(frequency);
+analogWrite(_pin,500);
+delay(duration);
+analogWrite(_pin,0);
 }
