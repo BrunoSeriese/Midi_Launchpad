@@ -6,13 +6,17 @@
 
 class Button {
   public:
+  int index=0;
   int pin;
   bool isPressed=false;
-  int mode = 1;
+  int mode = 3;
   Note note;
 
   Button() {}
   Button(int _pin, int noteId) : pin(_pin) {
+    note = Note(noteId);
+  } 
+  Button(int _index,int _pin, int noteId) : index(_index), pin(_pin) {
     note = Note(noteId);
   } 
 
@@ -28,6 +32,7 @@ class Button {
     case 2:
         break;
     case 3:
+        Serial.write((uint8_t)index);
         break;
     
     }
@@ -66,7 +71,7 @@ Button buttons[BUTTON_AMOUNT];
 void setupButtons() {
   for (int i = 0; i < BUTTON_AMOUNT; i++) {
     pinMode(BUTTON_PINS[i], INPUT_PULLUP);
-    buttons[i] = Button(BUTTON_PINS[i],36+i);
+    buttons[i] = Button(i,BUTTON_PINS[i],36+i);
   }
 }
 

@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include "src/SoundGenerator/sound_generator.h"
-#include <Wire.h>
+#include <SoftwareSerial.h>
 
 // IOs used for I2S. Not defined in i2s.h, unfortunately.
 // Note these are internal GPIO numbers and not pins on an
@@ -25,7 +25,7 @@
 // playback vars
 const uint32_t sample_rate = 32000;
 
-#define SLAVE_ADDR 9
+SoftwareSerial mSerial(13, 12, false);
 const char term = '\n';
 
 
@@ -42,8 +42,9 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
 
-  // i2c
-  Wire.begin(SLAVE_ADDR);
+  // mega serial
+  mSerial.begin(115200);
+  while (!mSerial);
 
   // start i2s
   i2s_begin();
@@ -76,10 +77,11 @@ double notemap[24] = {
 
 void loop()
 {
-  if (Wire.available()>0) {
-    String ms = Wire.readStringUntil(term);
-    noteIndex = ms.substring(0,2).toInt();
-    state = ms.substring(2,3).toInt();
+  if (mSerial.available()) {
+    byte data[1];
+    mSerial.readBytes(data, 1);
+    noteIndex = reinterpret_cast<uint8&>(data[0]);
+    Serial.println(noteIndex);
   }
 
 
