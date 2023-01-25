@@ -8,6 +8,7 @@ class Button {
   public:
   int pin;
   bool isPressed=false;
+  int mode = 1;
   Note note;
 
   Button() {}
@@ -17,12 +18,39 @@ class Button {
 
   void press() {
     isPressed=true;
-    note.on();
+    
+
+    switch (mode)
+    {
+    case 1:
+        note.on();
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    
+    }
   }
 
   void unpress() {
     isPressed=false;
-    note.off();
+   
+     switch (mode)
+    {
+    case 1:
+        note.off();
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    
+    }
+  }
+
+  void changeMode(int mode){
+    mode = mode;
   }
 
   private:
