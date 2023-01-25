@@ -13,7 +13,6 @@ class Button {
   } 
 
   void press() {
-    Serial.println("Press");
     isPressed=true;
     note.on();
   }
