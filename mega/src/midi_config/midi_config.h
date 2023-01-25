@@ -9,6 +9,9 @@ int activeChannel=1;
 #define NOTE_ON  B10010000
 #define NOTE_OFF B10000000
 
+int potVelocity;
+
+
 const int NOTEIDMAP[24] = {
     60,61,62,63,64,65,66,67,68,69,70,71,
     72,73,74,75,76,77,78,79,80,81,82,83
@@ -27,7 +30,10 @@ void sendMIDImessage(byte status, byte data1, byte data2)
 }
 
 void noteOn(int note) {
-  sendMIDImessage(NOTE_ON, note, DEFAULT_VELOCITY);
+  int sensorValue = analogRead(A0);
+  potVelocity = map(sensorValue, 0, 663, 0, 100);
+  Serial.println(sensorValue);
+  sendMIDImessage(NOTE_ON, note, potVelocity);
 }
 
 void noteOff(int note) {

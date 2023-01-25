@@ -9,7 +9,7 @@ class Button {
   int index=0;
   int pin;
   bool isPressed=false;
-  int mode = 3;
+  int mode = 1;
   Note note;
 
   Button() {}
