@@ -4,7 +4,7 @@
 #include "src/SoundGenerator/sound_generator.h"
 #include <SoftwareSerial.h>
 
-// IOs used for I2S. Not defined in i2s.h, unfortunately.
+/* IOs used for I2S. Not defined in i2s.h, unfortunately.
 // Note these are internal GPIO numbers and not pins on an
 // Arduino board. Users need to verify their particular wiring.
 // Most of the pins are only used when i2s clock is enabled
@@ -14,15 +14,18 @@
 // I2SI_DATA 12
 // I2SI_BCK  13
 // I2SI_WS   14
+*/
 #include <I2S.h>
 #include <I2S_reg.h>
 
-// i2s pins are
+/* i2s pins are
 // I2SO_DATA 3(RX)  -> DIN 
 // I2SO_BCK  15(D8) -> BCLK
 // I2SO_WS   2(D4)  -> LRC
+*/
 
 // playback vars
+#define I2S_BUFFER_SIZE 512
 const uint32_t sample_rate = 32000;
 
 SoftwareSerial mSerial(13, 12, false);
@@ -55,51 +58,43 @@ void setup()
 }
 
 
-inline int16_t double2int(double d)
-{
-    d += 6755399441055744.0;
-    return reinterpret_cast<int16_t&>(d);
-}
 
 
-double volume = 0.1;
-float offset = 0;
-double dSample=0;
 
-int16_t buffer[512];
+
 int noteIndex=0;
 int state=0;
 double notemap[24] = {
-  261.626,277.183,293.665,311.127,329.628,349.228,369.994,391.995,415.305,440.00,466.164,493.883,
-  523.251,554.365,587.330,622.254,659.225,698.456,739.989,783.991,830.609,880.00,932.328,987.767
+  261.626,277.183,293.665,311.127,
+  329.628,349.228,369.994,391.995,
+  415.305,440.00,466.164,493.883,
+  523.251,554.365,587.330,622.254,
+  659.225,698.456,739.989,783.991,
+  830.609,880.00,932.328,987.767
 };
 
 
+
+int16_t buffer[512];
+unsigned long sTime = micros();
+unsigned long eTime = sTime;
 void loop()
 {
-  if (mSerial.available()) {
-    byte data[1];
-    mSerial.readBytes(data, 1);
-    noteIndex = reinterpret_cast<uint8&>(data[0]);
-    Serial.println(noteIndex);
-  }
-
+  // if (mSerial.available()) {
+  //   byte data[1];
+  //   mSerial.readBytes(data, 1);
+  //   noteIndex = reinterpret_cast<uint8&>(data[0]);
+  //   Serial.println(noteIndex);
+  // }
 
   // audio stuff
-  for(int i=0;i<512;i++) {
-    if (noteIndex<25) {
-      dSample = sineWave(notemap[noteIndex], offset);
-      buffer[i] = double2int(dSample*32767*volume);
-      offset+=31.25*0.000001; 
-      if (offset>1) {
-        offset = offset-1;
-      }    
-    } else {
-      buffer[i] = 0;
-    }
+  sTime = micros();
+  for(int i=0;i<I2S_BUFFER_SIZE;i++) {
+    buffer[i]=updateSound();
   }
+  Serial.println(micros()-sTime);
   
-  for (int i=0; i<512;i++) {
+  for (int i=0; i<I2S_BUFFER_SIZE;i++) {
     i2s_write_sample(buffer[i]);
   }  
  
