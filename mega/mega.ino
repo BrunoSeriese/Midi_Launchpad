@@ -1,12 +1,17 @@
 #include "src/midi_config/midi_config.h"
 #include "src/button_config/button_config.h"
-
+// #include <SoftwareSerial.h>
 
                    
 void setup() {
   Serial.begin(115200);
   while(!Serial) {}
-  Serial.println("Start!");
+  // Serial.println("Start!");
+
+  
+  Serial1.begin(115200);
+  while(!Serial1) {}
+  
 
   setupButtons();
 }

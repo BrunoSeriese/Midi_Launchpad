@@ -9,7 +9,7 @@ class Button {
   int index=0;
   int pin;
   bool isPressed=false;
-  int mode = 3;
+  int mode = 1;
   Note note;
 
   Button() {}
@@ -32,7 +32,7 @@ class Button {
     case 2:
         break;
     case 3:
-        Serial.write((uint8_t)index);
+        Serial1.write((uint8_t)index);
         break;
     
     }
