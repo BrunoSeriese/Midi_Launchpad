@@ -55,6 +55,9 @@ void setup()
   i2s_set_bits(16);
 
   Serial.println("Begin!");
+
+  double testFreq=220.0;
+  playSound(testFreq);
 }
 
 
@@ -63,7 +66,6 @@ void setup()
 
 
 int noteIndex=0;
-int state=0;
 double notemap[24] = {
   261.626,277.183,293.665,311.127,
   329.628,349.228,369.994,391.995,
@@ -74,23 +76,24 @@ double notemap[24] = {
 };
 
 
-
+uint8_t volume = 5;
 int16_t buffer[512];
 unsigned long sTime = micros();
 unsigned long eTime = sTime;
 void loop()
 {
-  // if (mSerial.available()) {
-  //   byte data[1];
-  //   mSerial.readBytes(data, 1);
-  //   noteIndex = reinterpret_cast<uint8&>(data[0]);
-  //   Serial.println(noteIndex);
-  // }
+  if (mSerial.available()) {
+    byte data[1];
+    mSerial.readBytes(data, 1);
+    noteIndex = reinterpret_cast<uint8&>(data[0]);
+    Serial.println(noteIndex);
+    playSound(notemap[noteIndex]);
+  }
 
   // audio stuff
   sTime = micros();
   for(int i=0;i<I2S_BUFFER_SIZE;i++) {
-    buffer[i]=updateSound();
+    buffer[i]=updateSounds()/volume;
   }
   Serial.println(micros()-sTime);
   
