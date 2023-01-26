@@ -76,7 +76,7 @@ double notemap[24] = {
 };
 
 
-float volume = 0.6;
+float volume = 0.8;
 int16_t buffer[512];
 unsigned long sTime = micros();
 unsigned long eTime = sTime;

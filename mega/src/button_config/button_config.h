@@ -4,12 +4,16 @@
 #define BUTTON_CONFIG_H
 #define BUTTON_AMOUNT 24
 
+#define MODEBTN1 8
+#define MODEBTN2 9
+
+int MODE = 3;
+
 class Button {
   public:
   int index=0;
   int pin;
   bool isPressed=false;
-  int mode = 1;
   Note note;
 
   Button() {}
@@ -22,9 +26,8 @@ class Button {
 
   void press() {
     isPressed=true;
-    
 
-    switch (mode)
+    switch (MODE)
     {
     case 1:
         note.on();
@@ -41,7 +44,7 @@ class Button {
   void unpress() {
     isPressed=false;
    
-     switch (mode)
+     switch (MODE)
     {
     case 1:
         note.off();
@@ -52,10 +55,6 @@ class Button {
         break;
     
     }
-  }
-
-  void changeMode(int mode){
-    mode = mode;
   }
 
   private:
@@ -69,6 +68,9 @@ Button buttons[BUTTON_AMOUNT];
 
 
 void setupButtons() {
+  pinMode(MODEBTN1, INPUT_PULLUP);
+  pinMode(MODEBTN2, INPUT_PULLUP);
+
   for (int i = 0; i < BUTTON_AMOUNT; i++) {
     pinMode(BUTTON_PINS[i], INPUT_PULLUP);
     buttons[i] = Button(i,BUTTON_PINS[i],36+i);
@@ -77,6 +79,12 @@ void setupButtons() {
 
 
 void handleButtons() {
+  if (digitalRead(MODEBTN1) == LOW) {
+    MODE = 3;
+  } else {
+    MODE = 1;
+  }
+
   for (int i=0;i<BUTTON_AMOUNT;i++){
     if (digitalRead(buttons[i].pin) == LOW && !buttons[i].isPressed){
       buttons[i].press();

@@ -49,14 +49,14 @@ void playSound(double &freq) {
 }
 
 
-int16_t sample=0;
+int32_t sample=0;
 int32_t result=0;
 int16_t updateSounds() {
   result=0;
   for (int i=0;i<16;i++) {
     sample = sounds[i].update();
     if(sample!=0) {
-      result += sample;
+      result = result/2+sample/2;
     }
   }
   return result;
