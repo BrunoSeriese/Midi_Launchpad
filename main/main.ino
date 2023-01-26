@@ -76,7 +76,7 @@ double notemap[24] = {
 };
 
 
-uint8_t volume = 5;
+float volume = 0.6;
 int16_t buffer[512];
 unsigned long sTime = micros();
 unsigned long eTime = sTime;
@@ -86,14 +86,14 @@ void loop()
     byte data[1];
     mSerial.readBytes(data, 1);
     noteIndex = reinterpret_cast<uint8&>(data[0]);
-    Serial.println(noteIndex);
+    // Serial.println(noteIndex);
     playSound(notemap[noteIndex]);
   }
 
   // audio stuff
   sTime = micros();
   for(int i=0;i<I2S_BUFFER_SIZE;i++) {
-    buffer[i]=updateSounds()/volume;
+    buffer[i]=updateSounds()*volume;
   }
   Serial.println(micros()-sTime);
   

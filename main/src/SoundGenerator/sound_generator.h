@@ -43,18 +43,23 @@ struct Sound {
 uint8_t soundIndex=0;
 Sound sounds[16];
 void playSound(double &freq) {
-  soundIndex+=16;
-  sounds[soundIndex>>4] = Sound(freq);
+  sounds[soundIndex] = Sound(freq);
+  soundIndex++;
+  if (soundIndex==16) soundIndex=0;
 }
 
 
 int16_t sample=0;
+int32_t result=0;
 int16_t updateSounds() {
-  sample = sounds[0].update();
-  for (int i=1;i<16;i++) {
-    sample += sounds[i].update()/2;
+  result=0;
+  for (int i=0;i<16;i++) {
+    sample = sounds[i].update();
+    if(sample!=0) {
+      result += sample;
+    }
   }
-  return sample;
+  return result;
 }
 
 
